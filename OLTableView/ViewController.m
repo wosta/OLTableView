@@ -18,8 +18,7 @@ static NSString *ViewControllerReuseIdentifierID = @"ViewControllerReuseIdentifi
 
 @implementation ViewController
 
-#pragma mark -- 
-// 来源于 http://www.strongx.cn/?p=32
+#pragma mark --
 
 /**
  *  分割线顶头
@@ -61,7 +60,7 @@ static NSString *ViewControllerReuseIdentifierID = @"ViewControllerReuseIdentifi
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 5;
+    return self.dataArray.count;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -70,8 +69,58 @@ static NSString *ViewControllerReuseIdentifierID = @"ViewControllerReuseIdentifi
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ViewControllerReuseIdentifierID];
-    cell.textLabel.text = [NSString stringWithFormat:@"cell-%zd", indexPath.row];
+    cell.textLabel.text = [NSString stringWithFormat:@"cell-%zd", [self.dataArray[indexPath.row] intValue]];
     return cell;
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    return YES;
+}
+
+- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
+    return YES;
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    /** 不同的行, 可以设置不同的编辑样式, 编辑样式是一个枚举类型 */
+    if (indexPath.row == 0) {
+        return UITableViewCellEditingStyleInsert;
+    } else {
+        return UITableViewCellEditingStyleDelete;
+    }
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    /**   点击 删除 按钮的操作 */
+    if (editingStyle == UITableViewCellEditingStyleDelete) { /**< 判断编辑状态是删除时. */
+
+        /** 1. 更新数据源(数组): 根据indexPaht.row作为数组下标, 从数组中删除数据. */
+        [self.dataArray removeObjectAtIndex:indexPath.row];
+
+        /** 2. TableView中 删除一个cell. */
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationRight];
+    }
+
+    /** 点击 +号 图标的操作. */
+    if (editingStyle == UITableViewCellEditingStyleInsert) { /**< 判断编辑状态是插入时. */
+        /** 1. 更新数据源:向数组中添加数据. */
+        [self.dataArray insertObject:@"abcd" atIndex:indexPath.row];
+
+        /** 2. TableView中插入一个cell. */
+        [tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+        
+    }
+}
+
+- (NSMutableArray *)dataArray {
+    if (!_dataArray) {
+        _dataArray = [[NSMutableArray alloc] init];
+        for (int i=0; i<5; i++) {
+            [_dataArray addObject:[NSNumber numberWithInt:i+100]];
+        }
+    }
+    return _dataArray;
 }
 
 - (void)didReceiveMemoryWarning {
